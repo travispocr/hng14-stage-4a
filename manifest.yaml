@@ -1,5 +1,5 @@
 services:
-  image: swift-deploy-1-node:latest
+  image: travispocr-swiftdeploy:latest
   port: 3000
   mode: stable
   version: "1.0.0"
