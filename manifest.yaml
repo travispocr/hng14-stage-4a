@@ -11,10 +11,15 @@ nginx:
   port: 8080
   proxy_timeout: 30
 
+opa:
+  image: openpolicyagent/opa:latest
+  port: 8181
+  policies_dir: ./policies
+
 network:
   name: swiftdeploy-net
   driver_type: bridge
 
 meta:
-  username: hngstage4a
-  contact: hngstage4a@swiftdeploy.local
+  username: hngstage4b
+  contact: hngstage4b@swiftdeploy.local

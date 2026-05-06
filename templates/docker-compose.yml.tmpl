@@ -4,6 +4,9 @@
 networks:
   {{NETWORK_NAME}}:
     driver: {{NETWORK_DRIVER}}
+  opa-internal:
+    driver: bridge
+    internal: true
 
 volumes:
   {{LOG_VOLUME}}:
@@ -22,7 +25,6 @@ services:
       - {{LOG_VOLUME}}:/app/logs
     networks:
       - {{NETWORK_NAME}}
-    # Never expose service port directly — all traffic via Nginx
     expose:
       - "{{SERVICE_PORT}}"
     cap_drop:
@@ -31,7 +33,6 @@ services:
       - NET_BIND_SERVICE
     security_opt:
       - no-new-privileges:true
-    read_only: false
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{{SERVICE_PORT}}/healthz"]
       interval: 10s
@@ -63,3 +64,31 @@ services:
       - SETGID
     security_opt:
       - no-new-privileges:true
+
+  opa:
+    image: openpolicyagent/opa:latest
+    container_name: swiftdeploy-opa
+    restart: {{RESTART_POLICY}}
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--log-level=error"
+      - "/policies"
+    volumes:
+      - ./policies:/policies:ro
+    networks:
+      - opa-internal
+      - {{NETWORK_NAME}}
+    expose:
+      - "8181"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "/opa", "eval", "--data", "/policies", "data"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
